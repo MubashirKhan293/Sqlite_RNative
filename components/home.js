@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, StyleSheet, Button, FlatList, ScrollView } from "react-native";
 import { openDatabase } from 'react-native-sqlite-storage';
-import UpdateUser from "./updateUser";
 var db = openDatabase({ name: 'UserDatabase5.db' });
 
 const Home = (props) => {
@@ -10,7 +9,7 @@ const Home = (props) => {
   const [password, setpassword] = useState('');
   const [userData, SetUserData] = useState('');
 
-
+//creating a table in the database
   const addUser = () => {
     db.transaction((txn) => {
       txn.executeSql(
@@ -33,23 +32,7 @@ const Home = (props) => {
   }
 
 
-  const viewUser = () => {
-    db.transaction(txn => {
-      txn.executeSql("SELECT * FROM table_user",
-        [],
-        (tex, res) => {
-          var temp = [];
-          for (let i = 0; i < res.rows.length; ++i) {
-            console.log(res.rows.item(i));
-            temp.push(res.rows.item(i));
-          }
-          SetUserData(temp);
-        }
-      );
-    });
-  }
-
-
+//Insert the data into table
   const saveData = () => {
     db.transaction(txn => {
       txn.executeSql("INSERT INTO table_user(user_name,user_email,user_password) VALUES (?,?,?)",
@@ -69,31 +52,10 @@ const Home = (props) => {
   }
 
 
-  const deleteRecord=(id)=>{
-    db.transaction((txn)=>{
-      txn.executeSql("DELETE FROM table_user WHERE user_id=?",
-      [id],
-      (tx,res)=>{
-        console.warn("Deleted Successfully");
-        saveData();
-      },
-      )
-    }
-    )
-  }
+//mount lifecycle method for creating table
   useEffect(() => {
     addUser();
   }, []);
-
-
-  useEffect(() => {
-    viewUser();
-  }, []);
-
-  useEffect(() => {
-    viewUser();
-  }, [userData]);
-
 
   return (
     <View>
@@ -122,41 +84,19 @@ const Home = (props) => {
       <View style={styles.button}>
         <Button color={'green'} title="Submit" onPress={() => {
           saveData();
-          viewUser();
+          props.navigation.navigate('View')
         }}></Button>
       </View>
-      <FlatList
-        data={userData}
-        style={{ marginBottom: 400 }}
-        renderItem={({ item }) => {
-
-          return (
-            <ScrollView style={styles.users}>
-              <Text>{"Id : " + item.user_id}</Text>
-              <Text>{"Name : " + item.user_name}</Text>
-              <Text>{"Email : " + item.user_email}</Text>
-              <Text>{"password : " + item.user_password}</Text>
-              <View style={{flex:1, flexDirection:'row'}}>
-                <View style={{flex:1, marginRight:10,}}><Button title="UPDATE" onPress={()=>props.navigation.navigate('Update',{
-                    data:{
-                        name:item.user_name,
-                        email:item.user_email,
-                        password:item.user_password,
-                        id:item.user_id,
-                    }
-                })}></Button></View>
-                <View style={{flex:1}}><Button title="DELETE" onPress={()=>deleteRecord(item.user_id)}></Button></View>
-              </View>
-            </ScrollView>
-          )
-        }}>
-
-      </FlatList>
-      
+      <View style={styles.button}>
+        <Button color={'green'} title="View Records" onPress={() => {
+          props.navigation.navigate('View')
+        }}></Button>
+      </View>
     </View>
   )
 }
 
+//Style for the home screen
 const styles = StyleSheet.create({
   text: {
 
